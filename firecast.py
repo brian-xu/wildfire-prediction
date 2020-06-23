@@ -12,7 +12,7 @@ class FireCast(nn.Module):
                                    nn.MaxPool2d(kernel_size=2),
                                    nn.Dropout2d())
         self.conv2 = nn.Sequential(nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1),
-                                   nn.RelU(),
+                                   nn.ReLU(),
                                    nn.MaxPool2d(kernel_size=2),
                                    nn.Dropout2d())
 
@@ -38,6 +38,6 @@ class FireCast(nn.Module):
         x2 = weather
 
         x = torch.cat((x1, x2))
-        x = F.sigmoid(x)
         x = self.dense2(x)
+        x = F.sigmoid(x)
         return x
