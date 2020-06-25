@@ -32,14 +32,14 @@ class FireCast(nn.Module):
 
     def forward(self, terrain, weather):
         # terrain = self.avg_pool1(terrain)
-        x1 = self.conv1(terrain)
+        x1 = self.conv1(terrain.float())
         x1 = self.conv2(x1)
         x1 = x1.view(-1, self.linear_input_size)
         x1 = self.dense1(x1)
         x1 = F.relu(x1)
-        x2 = torch.tensor(weather)
+        x2 = weather.float()
 
-        x = torch.cat((x1, x2))
+        x = torch.cat((x1, x2), dim=1)
         x = self.dense2(x)
-        x = F.sigmoid(x)
+        x = torch.sigmoid(x)
         return x
