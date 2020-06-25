@@ -1,46 +1,50 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from numpy import np
 
 from firecast import FireCast
+from wildfire_data_loader import WildfireDataset
 
 area = 15
-perim = (area - 1) // 2
+peri = (area - 1) // 2
 net = FireCast(area)
 
 lr = 0.005
 
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.rmsprop.RMSprop(net.parameters(), lr=lr)
+criterion = nn.BCELoss()
+optimizer = optim.RMSprop(net.parameters(), lr=lr)
 
 epochs = 10
 
-trainloader = None
+DATASET_PATH = './wildfire_data/uci_ml_hackathon_fire_dataset_2012-05-09_2013-01-01_10k_train_v2-002.hdf5'
+
+trainset = WildfireDataset(DATASET_PATH)
+
+trainloader = torch.utils.data.DataLoader(trainset, shuffle=True)
 
 for epoch in range(epochs):
-
     running_loss = 0.0
     for i, data in enumerate(trainloader):
-        pad_width = ((0, 0), (0, 0), (perim, perim), (perim, perim))
+        pad_width = ((0, 0), (0, 0), (peri, peri), (peri, peri))
         terrain_full = np.pad(data[:, :6], pad_width)
         weather_full = data[:, 6:-1]
         target = data[:, -1]
 
-        optimizer.zero_grad()
         output = np.zeros(target.shape)
-        for x in range(target.shape[0]):
-            for y in range(target.shape[1]):
+        for x in range(target.shape[1]):
+            for y in range(target.shape[2]):
+                optimizer.zero_grad()
                 terrain = np.zeros((1, 6, area, area))
-                weather = np.zeros(5)
                 for layer in range(6):
-                    terrain[0][layer] = terrain_full[0][layer][x + perim:x + perim + area][y + perim:y + perim + area]
-                weather = weather_full[0, :, x, y]
-                output[x][y] = net(terrain, weather)[0].item()
-        loss = criterion(torch.tensor(output), torch.tensor(target))
-        loss.backward()
-        optimizer.step()
-
+                    terrain[0][layer] = terrain_full[0, layer, x:x + area, y:y + area]
+                weather = weather_full[0:1, :, x, y]
+                terrain = torch.tensor(terrain)
+                result = net(terrain, weather)
+                # output[:, x, y] = result[0][0].item()
+                loss = criterion(result[0].double(), target[:, x, y])
+                loss.backward()
+                optimizer.step()
         running_loss += loss.item()
         if i % 2000 == 1999:  # print every 2000 mini-batches
             print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 2000))
