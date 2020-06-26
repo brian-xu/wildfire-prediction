@@ -4,10 +4,10 @@ import torch.nn.functional as F
 
 
 class FireCast(nn.Module):
-    def __init__(self, area=15):
+    def __init__(self, area=15, terrain_features=6, weather_features=5):
         super(FireCast, self).__init__()
         # self.avg_pool1 = nn.AvgPool2d(kernel_size=2)
-        self.conv1 = nn.Sequential(nn.Conv2d(in_channels=6, out_channels=32, kernel_size=2, stride=1),
+        self.conv1 = nn.Sequential(nn.Conv2d(in_channels=terrain_features, out_channels=32, kernel_size=2, stride=1),
                                    nn.Sigmoid(),
                                    nn.MaxPool2d(kernel_size=2, stride=2),
                                    nn.Dropout2d())
@@ -26,9 +26,9 @@ class FireCast(nn.Module):
         conv2d_size = conv2d_result(conv2d_size, 2, 2)
         self.linear_input_size = (conv2d_size ** 2) * 64
 
-        # classifier
+        # dense output layers
         self.dense1 = nn.Linear(self.linear_input_size, 128)
-        self.dense2 = nn.Linear(133, 1)
+        self.dense2 = nn.Linear(128 + weather_features, 1)
 
     def forward(self, terrain, weather):
         # terrain = self.avg_pool1(terrain)
