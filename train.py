@@ -18,15 +18,14 @@ area = 15
 peri = (area - 1) // 2
 net = FireCast(area, terrain_features=trainset.terrain_features, weather_features=trainset.weather_features)
 
-lr = 0.005
+lr = 0.0001
 criterion = nn.BCELoss()
 optimizer = optim.RMSprop(net.parameters(), lr=lr)
-epochs = 10
-batches = 0
+epochs = 2
 
 for epoch in range(epochs):
-    running_loss = 0.0
     for i, data in enumerate(trainloader):
+        running_loss = 0.0
         data = norm(data[0]).reshape(data.shape)
         pad_width = ((0, 0), (0, 0), (peri, peri), (peri, peri))
         terrain_full = np.pad(data[:, :6], pad_width)
@@ -36,8 +35,6 @@ for epoch in range(epochs):
         output = np.zeros(target.shape)
         for x in range(target.shape[1]):
             for y in range(target.shape[2]):
-                batches += 1
-
                 terrain = np.zeros((1, 6, area, area))
                 for layer in range(6):
                     terrain[0][layer] = terrain_full[0, layer, x:x + area, y:y + area]
@@ -51,9 +48,8 @@ for epoch in range(epochs):
                 optimizer.step()
                 running_loss += loss.item()
 
-                if batches % 2000 == 1999:  # print every 2000 mini-batches
-                    print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 2000))
-                    running_loss = 0.0
+        # print after every example
+        print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / (target.shape[1] * target.shape[2])))
 
 print('Finished Training')
 
