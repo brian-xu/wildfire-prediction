@@ -15,7 +15,7 @@ norm = transforms.Normalize(trainset.mean, trainset.std)
 trainloader = torch.utils.data.DataLoader(trainset, shuffle=True)
 
 area = 15
-peri = (area - 1) // 2
+perim = (area - 1) // 2
 net = FireCast(area, terrain_features=trainset.terrain_features, weather_features=trainset.weather_features)
 
 lr = 0.0001
@@ -27,12 +27,12 @@ for epoch in range(epochs):
     for i, data in enumerate(trainloader):
         running_loss = 0.0
         data = norm(data[0]).reshape(data.shape)
-        pad_width = ((0, 0), (0, 0), (peri, peri), (peri, peri))
-        terrain_full = np.pad(data[:, :6], pad_width)
-        weather_full = data[:, 6:-1]
+        pad_width = ((0, 0), (0, 0), (perim, perim), (perim, perim))
+        terrain_full = np.pad(data[:, :trainset.terrain_features], pad_width)
+        weather_full = data[:, trainset.terrain_features:-1]
         target = data[:, -1]
 
-        output = np.zeros(target.shape)
+        # output = np.zeros(target.shape)
         for x in range(target.shape[1]):
             for y in range(target.shape[2]):
                 terrain = np.zeros((1, 6, area, area))
@@ -49,9 +49,12 @@ for epoch in range(epochs):
                 running_loss += loss.item()
 
         # print after every example
-        print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / (target.shape[1] * target.shape[2])))
+        print(f'[{epoch + 1}, {i + 1}] loss: {running_loss / (target.shape[1] * target.shape[2]):.3f}')
 
 print('Finished Training')
 
-PATH = './firecast.pth'
-torch.save(net, PATH)
+firecast_path = './firecast.pth'
+torch.save(net, firecast_path)
+
+transform_path = './transform.pth'
+torch.save(norm, transform_path)
