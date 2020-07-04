@@ -21,16 +21,20 @@ class WildfireDataset(Dataset):
         rapid_refresh = train_data['meteorology'][:, 4]
         viirs_12 = train_data['target'][:, 0:1]
         self.data = np.nan_to_num(np.concatenate((viirs_0, landfire, rapid_refresh, viirs_12), axis=1))
-        if normalize:
-            self.mean = np.mean(self.data, axis=(0, 2, 3))
-            self.std = np.std(self.data, axis=(0, 2, 3))
-            self.mean[[0, -1]] = 0
-            self.std[[0, -1]] = 1
-        else:
-            self.mean = np.zeros(self.data.shape[1])
-            self.std = np.ones(self.data.shape[1])
         self.terrain_features = len(landfire_attrs) + 1
         self.weather_features = rapid_refresh.shape[1]
+        if normalize:
+            self.terrain_mean = np.mean(self.data[:, :self.terrain_features], axis=(0, 2, 3))
+            self.terrain_std = np.std(self.data[:, :self.terrain_features], axis=(0, 2, 3))
+            self.weather_mean = np.mean(self.data[:, self.terrain_features:-1], axis=(0, 2, 3))
+            self.weather_std = np.std(self.data[:, self.terrain_features:-1], axis=(0, 2, 3))
+            self.terrain_mean[[0]] = 0
+            self.terrain_std[[0]] = 1
+        else:
+            self.terrain_mean = np.zeros(self.terrain_features)
+            self.terrain_std = np.ones(self.terrain_features)
+            self.weather_mean = np.zeros(self.weather_features)
+            self.weather_std = np.ones(self.weather_features)
 
     def __len__(self):
         return len(self.data)
