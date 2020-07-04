@@ -36,4 +36,4 @@ class WildfireDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
-        return self.data[1170]
+        return self.data[index]
