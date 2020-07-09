@@ -10,14 +10,19 @@
 [Ll]ocal
 [Ss]cripts
 pyvenv.cfg
+.env
 .venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 pip-selfcheck.json
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
-# User-specific stuff
 .idea/
 
 ### Python template
@@ -30,15 +35,12 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-.Python
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -70,11 +72,5 @@ ipython_config.py
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow
 __pypackages__/
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# User-specific
+train/wildfire_data/
