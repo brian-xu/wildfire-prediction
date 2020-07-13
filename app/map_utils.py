@@ -25,3 +25,8 @@ class MapUtils:
         x_min, y_min = self.to_deg[zone].transform(x - (area / 2 * 375), y - (area / 2 * 375))
         x_max, y_max = self.to_deg[zone].transform(x + (area / 2 * 375), y + (area / 2 * 375))
         return [x_min, y_min, x_max, y_max]
+
+    def rr_indexes(self, latitude: float, longitude: float):
+        lat_index = (latitude - 16.32201100000) // 0.18470909
+        lon_index = (longitude + 139.85660300000) // 0.19242568
+        return [lat_index, lon_index]
