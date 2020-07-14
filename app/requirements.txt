@@ -1,0 +1,5 @@
+geopandas
+rasterio
+netCDF4
+requests
+flask

@@ -1,4 +1,3 @@
-numpy~=1.18.5
-torch~=1.5.1+cpu
-torchvision~=0.6.1+cpu
+numpy
 h5py
+# PyTorch is also required. See here for installation instructions: https://pytorch.org/get-started/locally/
