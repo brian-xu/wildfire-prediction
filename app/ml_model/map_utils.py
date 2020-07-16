@@ -3,7 +3,6 @@
 import io
 
 import geopandas as gpd
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pyproj.crs import CRS
@@ -44,8 +43,6 @@ def generate_perimeters(gdf, index, area):
     gdf = gdf[gdf.geometry.y >= center_lat - area * 375]
     gdf = gdf[gdf.geometry.y <= center_lat + area * 375]
     peri = (area - 1) // 2
-    gdf.plot()
-    plt.show()
     for lat in range(-peri, peri + 1):
         for lon in range(-peri, peri + 1):
             top_left = Point(center_lon + (lon - peri - 0.5) * 375, center_lat + (lat - peri - 0.5) * 375)
