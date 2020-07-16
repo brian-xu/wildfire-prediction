@@ -17,7 +17,7 @@ right = -66.9513812  # east lon
 bottom = 24.7433195  # south lat
 
 
-def rr_indexes(lat: float, lon: float):
+def rr_indices(lat: float, lon: float):
     lat_index = (lat - 16.3220110) // 0.18470909
     lon_index = (lon + 139.8566030) // 0.19242568
     return [lat_index, lon_index]

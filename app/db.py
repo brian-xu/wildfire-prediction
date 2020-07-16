@@ -15,13 +15,13 @@ class DataCollector:
                     'SUOMI_VIIRS_C2_USA_contiguous_and_Hawaii_VNP14IMGTDL_NRT_' + \
                     self.date.strftime('%Y%j') + '.txt'
         viirs_data = requests.get(viirs_url,
-                                  headers={'Authorization': f'Bearer {self.auth_key}'}).text
+                                  headers={'Authorization': f'Bearer {self.auth_key}'}
+                                  ).text
         return viirs_data
 
     def rapid_refresh_data(self):
         rapid_refresh_url = 'https://nomads.ncep.noaa.gov:9090/dods/rap/rap' + self.date.strftime("%Y%m%d") + '/rap_00z'
         return netCDF4.Dataset(rapid_refresh_url)
-        # rr_vars = ['tmp2m', 'rh2m', 'ugrd10m', 'vgrd10m', 'pratesfc']
 
     # TODO: Implement functions to access and interpret data collected here
     #  Implement function to access LANDFIRE data from GeoTIFF files
