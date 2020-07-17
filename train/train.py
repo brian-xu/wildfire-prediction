@@ -4,8 +4,8 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
 
-from train.firecast import FireCast
-from train.wildfire_data_loader import WildfireDataset
+from firecast import FireCast
+from wildfire_data_loader import WildfireDataset
 
 DATASET_PATH = 'wildfire_data/uci_ml_hackathon_fire_dataset_2012-05-09_2013-01-01_10k_train_v2-002.hdf5'
 trainset = WildfireDataset(DATASET_PATH)
