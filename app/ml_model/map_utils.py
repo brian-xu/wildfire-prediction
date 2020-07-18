@@ -5,11 +5,24 @@ import io
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+from pyproj import Transformer
 from pyproj.crs import CRS
+from rasterio.windows import Window
 from shapely.geometry import Point
 
 aea = CRS.from_user_input("+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 "
                           "+x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs=True")
+landfire = CRS.from_string('PROJCS["unnamed",GEOGCS["NAD83",DATUM["North_American_Datum_1983",'
+                           'SPHEROID["GRS 1980",6378137,298.257222101004,AUTHORITY["EPSG","7019"]],'
+                           'AUTHORITY["EPSG","6269"]],PRIMEM["Greenwich",0],'
+                           'UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],'
+                           'AUTHORITY["EPSG","4269"]],PROJECTION["Albers_Conic_Equal_Area"],'
+                           'PARAMETER["latitude_of_center",23],PARAMETER["longitude_of_center",-96],'
+                           'PARAMETER["standard_parallel_1",29.5],PARAMETER["standard_parallel_2",45.5],'
+                           'PARAMETER["false_easting",0],PARAMETER["false_northing",0],'
+                           'UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],'
+                           'AXIS["Northing",NORTH]]')
+deg_landfire = Transformer.from_crs("epsg:4326", landfire)
 
 top = 49.3457868  # north lat
 left = -124.7844079  # west lon
@@ -42,11 +55,11 @@ def generate_perimeters(gdf, index, area):
     gdf = gdf[gdf.geometry.x <= center_lon + area * 375]
     gdf = gdf[gdf.geometry.y >= center_lat - area * 375]
     gdf = gdf[gdf.geometry.y <= center_lat + area * 375]
-    peri = (area - 1) // 2
-    for lat in range(-peri, peri + 1):
-        for lon in range(-peri, peri + 1):
-            top_left = Point(center_lon + (lon - peri - 0.5) * 375, center_lat + (lat - peri - 0.5) * 375)
-            center = Point(center_lon + lon * 375, center_lat + lat * 375)
+    perim = (area - 1) // 2
+    for lat in range(-perim, perim + 1):
+        for lon in range(-perim, perim + 1):
+            top_left = Point(center_lon + (lon - perim - 0.5) * 375, center_lat + (lat - perim - 0.5) * 375)
+            center = Point(fire_center.longitude, fire_center.latitude)
             fire_data = np.zeros((area, area))
             for index, fire in gdf.iterrows():
                 array_x = int((fire.geometry.x - top_left.x) // 375)
@@ -55,3 +68,9 @@ def generate_perimeters(gdf, index, area):
                     fire_data[array_y, array_x] = 1
             perimeters.append((center, fire_data))
     return perimeters
+
+
+def read_tiff(tiff, lat, lon):
+    center_lon, center_lat = deg_landfire.transform(lat, lon)
+    y, x = tiff.index(center_lon - 15 * 375, center_lat + 15 * 375)
+    data = tiff.read(1, window=Window(x, y, 375, 375))
