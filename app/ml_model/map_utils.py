@@ -1,6 +1,5 @@
-# TODO: Create rasterio functions to scale and pool areas of LANDFIRE data for inference
-#  Use the rr_indexes function to acquire RapidRefresh data at given points for inference
 import io
+import math
 
 import geopandas as gpd
 import numpy as np
@@ -70,7 +69,26 @@ def generate_perimeters(gdf, index, area):
     return perimeters
 
 
-def read_tiff(tiff, lat, lon):
+def read_tiff(tiff, lat, lon, area):
+    perim = (area - 1) // 2
     center_lon, center_lat = deg_landfire.transform(lat, lon)
-    y, x = tiff.index(center_lon - 15 * 375, center_lat + 15 * 375)
-    data = tiff.read(1, window=Window(x, y, 375, 375))
+    y, x = tiff.index(center_lon - (perim + 0.5) * 375, center_lat + (perim + 0.5) * 375)
+    data = tiff.read(1, window=Window(x, y, math.ceil(area * 12.5), math.ceil(area * 12.5)))
+    return data
+
+
+def resample_landfire(landfire, area):
+    resampled = np.zeros((area, area))
+    pool_mask = np.ones_like(landfire, dtype='float32')
+    lf_area = landfire.shape[0]
+    for x in range(12, lf_area, 25):
+        pool_mask[:, x] *= 0.5
+        pool_mask[x, :] *= 0.5
+    for x in range(math.floor(lf_area / 12.5)):
+        for y in range(math.floor(lf_area / 12.5)):
+            chunk_x = math.floor(12.5 * x)
+            chunk_y = math.floor(12.5 * y)
+            chunk = landfire[chunk_x:chunk_x + 13, chunk_y:chunk_y + 13]
+            chunk_mask = pool_mask[chunk_x:chunk_x + 13, chunk_y:chunk_y + 13]
+            resampled[x, y] = np.average(chunk, weights=chunk_mask)
+    return resampled
