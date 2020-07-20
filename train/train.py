@@ -2,16 +2,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision.transforms as transforms
 
 from firecast import FireCast
 from wildfire_data_loader import WildfireDataset
 
 DATASET_PATH = 'wildfire_data/uci_ml_hackathon_fire_dataset_2012-05-09_2013-01-01_10k_train_v2-002.hdf5'
 trainset = WildfireDataset(DATASET_PATH)
-
-terrain_norm = transforms.Normalize(trainset.terrain_mean, trainset.terrain_std)
-weather_norm = transforms.Normalize(trainset.weather_mean, trainset.weather_std)
 
 trainloader = torch.utils.data.DataLoader(trainset, shuffle=True)
 
@@ -31,8 +27,8 @@ for epoch in range(epochs):
         target = data[-1]
         data = data[:-1]
         pad_width = ((0, 0), (perim, perim), (perim, perim))
-        terrain_full = terrain_norm(torch.tensor(np.pad(data[:trainset.terrain_features], pad_width)))
-        weather_full = weather_norm(data[trainset.terrain_features:])
+        terrain_full = torch.tensor(np.pad(data[:trainset.terrain_features], pad_width))
+        weather_full = data[trainset.terrain_features:]
         # output = np.zeros(target.shape)
         for x in range(target.shape[0]):
             for y in range(target.shape[1]):
@@ -56,9 +52,3 @@ print('Finished Training')
 
 firecast_path = './firecast.pth'
 torch.save(net, firecast_path)
-
-transform_path = './terrain.pth'
-torch.save(terrain_norm, transform_path)
-
-transform_path = './weather.pth'
-torch.save(weather_norm, transform_path)
