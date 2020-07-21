@@ -51,6 +51,9 @@ class MapUtils:
                                )
         self.gdf = gdf.to_crs(crs=self.aea).iloc[:, [0, 1, -1]]
 
+    def len_gdf(self):
+        return self.gdf.shape[0]
+
     def generate_perimeters(self, index):
         perimeters = []
         fire_center = self.gdf.iloc[index, :]

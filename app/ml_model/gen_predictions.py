@@ -1,6 +1,4 @@
-# TODO: write functions that acquire data around every VIIRS point
-#  process given data using network.py
-#  return data in a way that can be interpreted by Leaflet and stored by db.py
+# TODO: return data in a way that can be interpreted by Leaflet and stored by data.py
 import numpy as np
 import rasterio
 
@@ -20,6 +18,9 @@ class MapPredictor:
         self.area = area
         self.predictor = predict.Predictor(firecast_path)
 
+    def viirs_generator(self):
+        return [i for i in range(self.mu.len_gdf())]
+
     def gen_predictions(self, indices):
         perimeters = []
         for i in indices:
@@ -32,8 +33,8 @@ class MapPredictor:
             for p in perimeters:
                 if self.mu.rr_indices(p[0].x, p[0].y) != [rr_x, rr_y]:
                     weather = np.zeros(len(self.rr_vars))
+                    rr_x, rr_y = self.mu.rr_indices(p[0].x, p[0].y)
                     for i, var in enumerate(self.rr_vars):
-                        rr_x, rr_y = self.mu.rr_indices(p[0].x, p[0].y)
                         weather[i] = self.rr_data[var][-1, rr_x, rr_y]
                     weather = np.expand_dims(weather, axis=0)
                 slp = self.mu.read_tiff(slp_tiff, p[0].x, p[0].y)
