@@ -13,7 +13,7 @@ from shapely.geometry import Point
 class MapUtils:
     def __init__(self, area):
         self.area = area
-        self.perim = (area - 1) // 2
+        self.radius = (area - 1) // 2
         self.aea = CRS.from_user_input("+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 "
                                        "+x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs=True")
         self.landfire = CRS.from_string('PROJCS["unnamed",GEOGCS["NAD83",DATUM["North_American_Datum_1983",'
@@ -28,6 +28,7 @@ class MapUtils:
                                         'AXIS["Northing",NORTH]]')
         self.aea_deg = Transformer.from_crs(self.aea, "epsg:4326")
         self.deg_landfire = Transformer.from_crs("epsg:4326", self.landfire)
+        self.gdf = None
 
         self.top = 49.3457868  # north lat
         self.left = -124.7844079  # west lon
@@ -45,35 +46,37 @@ class MapUtils:
         df = df[df.latitude <= self.top]
         df = df[df.longitude >= self.left]
         df = df[df.longitude <= self.right]
-        return gpd.GeoDataFrame(df, crs="EPSG:4326",
-                                geometry=gpd.points_from_xy(df.longitude, df.latitude)
-                                ).to_crs(crs=self.aea).iloc[:, [0, 1, -1]]
+        gdf = gpd.GeoDataFrame(df, crs="EPSG:4326",
+                               geometry=gpd.points_from_xy(df.longitude, df.latitude)
+                               )
+        self.gdf = gdf.to_crs(crs=self.aea).iloc[:, [0, 1, -1]]
 
-    def generate_perimeters(self, gdf, index):
+    def generate_perimeters(self, index):
         perimeters = []
-        fire_center = gdf.iloc[index, :]
+        fire_center = self.gdf.iloc[index, :]
         center_lon, center_lat = fire_center.geometry.x, fire_center.geometry.y
-        gdf = gdf[gdf.geometry.x >= center_lon - self.area * 375]
+        gdf = self.gdf[self.gdf.geometry.x >= center_lon - self.area * 375]
         gdf = gdf[gdf.geometry.x <= center_lon + self.area * 375]
         gdf = gdf[gdf.geometry.y >= center_lat - self.area * 375]
         gdf = gdf[gdf.geometry.y <= center_lat + self.area * 375]
-        for lat in range(-self.perim, self.perim + 1):
-            for lon in range(-self.perim, self.perim + 1):
-                top_left = Point(center_lon + (lon - self.perim - 0.5) * 375,
-                                 center_lat + (lat - self.perim - 0.5) * 375)
+        gdf_array = np.zeros((self.area * 2 - 1, self.area * 2 - 1))
+        top_left = Point(center_lon - (self.area - 0.5) * 375, center_lat - (self.area - 0.5) * 375)
+        for index, fire in gdf.iterrows():
+            array_x = int((fire.geometry.x - top_left.x) // 375)
+            array_y = int((fire.geometry.y - top_left.y) // 375)
+            if 0 <= array_x < self.area * 2 - 1 and 0 <= array_y < self.area * 2 - 1:
+                gdf_array[array_y, array_x] = 1
+        for lat in range(-self.radius, self.radius + 1):
+            for lon in range(-self.radius, self.radius + 1):
                 center = Point(self.aea_deg.transform(center_lon + lon * 375, center_lat + lat * 375))
-                fire_data = np.zeros((self.area, self.area))
-                for index, fire in gdf.iterrows():
-                    array_x = int((fire.geometry.x - top_left.x) // 375)
-                    array_y = int((fire.geometry.y - top_left.y) // 375)
-                    if 0 <= array_x < self.area and 0 <= array_y < self.area:
-                        fire_data[array_y, array_x] = 1
+                fire_data = gdf_array[self.radius + lat:self.area + self.radius + lat,
+                            self.radius + lon:self.area + self.radius + lon]
                 perimeters.append((center, fire_data))
         return perimeters
 
     def read_tiff(self, tiff, lat, lon):
         center_lon, center_lat = self.deg_landfire.transform(lat, lon)
-        y, x = tiff.index(center_lon - (self.perim + 0.5) * 375, center_lat + (self.perim + 0.5) * 375)
+        y, x = tiff.index(center_lon - (self.radius + 0.5) * 375, center_lat + (self.radius + 0.5) * 375)
         data = tiff.read(1, window=Window(x, y, math.ceil(self.area * 12.5), math.ceil(self.area * 12.5)))
         return data
 

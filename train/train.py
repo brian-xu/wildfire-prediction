@@ -12,7 +12,7 @@ trainset = WildfireDataset(DATASET_PATH)
 trainloader = torch.utils.data.DataLoader(trainset, shuffle=True)
 
 area = 15
-perim = (area - 1) // 2
+radius = (area - 1) // 2
 net = FireCast(area, terrain_features=trainset.terrain_features, weather_features=trainset.weather_features)
 
 lr = 0.0001
@@ -26,7 +26,7 @@ for epoch in range(epochs):
         data = data[0]
         target = data[-1]
         data = data[:-1]
-        pad_width = ((0, 0), (perim, perim), (perim, perim))
+        pad_width = ((0, 0), (radius, radius), (radius, radius))
         terrain_full = torch.tensor(np.pad(data[:trainset.terrain_features], pad_width))
         weather_full = data[trainset.terrain_features:]
         # output = np.zeros(target.shape)

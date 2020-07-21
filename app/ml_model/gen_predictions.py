@@ -10,7 +10,7 @@ from ml_model import map_utils, predict, xml_parser
 class MapPredictor:
     def __init__(self, viirs_data, rr_data, evc_path, slp_path, area, firecast_path):
         self.mu = map_utils.MapUtils(area)
-        self.viirs_gdf = self.mu.reproj_viirs(viirs_data)
+        self.mu.reproj_viirs(viirs_data)
         self.rr_data = rr_data
         self.rr_vars = ['tmp2m', 'rh2m', 'ugrd10m', 'vgrd10m', 'pratesfc']
         self.evc_path = evc_path
@@ -23,7 +23,7 @@ class MapPredictor:
     def gen_predictions(self, indices):
         perimeters = []
         for i in indices:
-            perimeters.extend(self.mu.generate_perimeters(self.viirs_gdf, i))
+            perimeters.extend(self.mu.generate_perimeters(i))
         rr_x, rr_y = (0, 0)
         predictions = []
         with rasterio.Env():

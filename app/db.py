@@ -23,7 +23,4 @@ class DataCollector:
         rapid_refresh_url = 'https://nomads.ncep.noaa.gov:9090/dods/rap/rap' + self.date.strftime("%Y%m%d") + '/rap_00z'
         return netCDF4.Dataset(rapid_refresh_url)
 
-    # TODO: Implement functions to access and interpret data collected here
-    #  Implement function to access LANDFIRE data from GeoTIFF files
-
 # TODO: Implement database class that stores and retrieves finished predictions
