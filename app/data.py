@@ -22,5 +22,3 @@ class DataCollector:
     def rapid_refresh_data(self):
         rapid_refresh_url = 'https://nomads.ncep.noaa.gov:9090/dods/rap/rap' + self.date.strftime("%Y%m%d") + '/rap_00z'
         return netCDF4.Dataset(rapid_refresh_url)
-
-# TODO: Implement database class that stores and retrieves finished predictions
