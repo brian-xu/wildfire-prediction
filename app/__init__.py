@@ -1,1 +1,12 @@
-# TODO: implement flask app that generates a Leaflet map with shaded boxes around fire predictions
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+
+@app.route('/')
+def hello():
+    return render_template("wildfire-demo.html")
+
+
+if __name__ == '__main__':
+    app.run()
