@@ -74,3 +74,5 @@ __pypackages__/
 
 # User-specific
 train/wildfire_data/
+app/ml_model/maps/
+app/ml_model/weights/
