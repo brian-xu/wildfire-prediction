@@ -8,7 +8,7 @@ points = []
 for i in mp.viirs_generator():
     for p in mp.gen_predictions([i]):
         if round(p[1], 2) > 0:
-            points.append([p[0].x, p[0].y, round(p[1], 2)])
+            points.append([p[0].x, p[0].y, f'{p[1]*35:.4f}'])
 
 with open("../static/latest.js", "w") as f:
     f.write(f'var firePoints = {points};')

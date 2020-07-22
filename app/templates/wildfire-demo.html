@@ -20,13 +20,13 @@
 <script src="../static/latest.js"></script>
 <script>
 
-    var map = new L.Map('map').setView([39.8283, -98.5795], 4);
+    var map = new L.Map('map').setView([39.8283, -98.5795], 5);
 
     var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    var heat = L.heatLayer(firePoints, {radius: 50}).addTo(map);
+    var heat = L.heatLayer(firePoints).addTo(map);
 
 </script>
 
