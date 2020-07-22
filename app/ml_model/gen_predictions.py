@@ -1,12 +1,14 @@
-# TODO: return data in a way that can be interpreted by Leaflet and stored by data.py
+import netCDF4
 import numpy as np
 import rasterio
+from shapely.geometry import Point
 
 from ml_model import map_utils, predict, xml_parser
 
 
 class MapPredictor:
-    def __init__(self, viirs_data, rr_data, evc_path, slp_path, area, firecast_path):
+    def __init__(self, area: int, viirs_data: str, rr_data: netCDF4.Dataset, evc_path: str, slp_path: str,
+                 firecast_path: str):
         self.mu = map_utils.MapUtils(area)
         self.mu.reproj_viirs(viirs_data)
         self.rr_data = rr_data
@@ -19,9 +21,17 @@ class MapPredictor:
         self.predictor = predict.Predictor(firecast_path)
 
     def viirs_generator(self):
+        """
+        Returns a generator iterating through all VIIRS products currently stored.
+        """
         return [i for i in range(self.mu.len_gdf())]
 
-    def gen_predictions(self, indices):
+    def gen_predictions(self, indices: [int]) -> [(Point, np.float)]:
+        """
+        Given specific indices in the VIIRS GeoDataFrame, calculate all predictions around those points.
+        Segmenting calculations through this function encourages parallelization to take advantage of all computing
+        resources available.
+        """
         perimeters = []
         for i in indices:
             perimeters.extend(self.mu.generate_perimeters(i))
@@ -45,5 +55,5 @@ class MapPredictor:
                     evc_var = sum([evc == i for i in self.evc_dict[var]])
                     evc_layers.append(self.mu.resample_landfire(evc_var))
                 terrain = np.expand_dims(np.stack([p[1], slp] + evc_layers), axis=0)
-                predictions.append([p[0], self.predictor.predict(terrain, weather)])
+                predictions.append((p[0], self.predictor.predict(terrain, weather)))
         return predictions
