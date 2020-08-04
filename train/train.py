@@ -13,7 +13,8 @@ trainloader = torch.utils.data.DataLoader(trainset, shuffle=True)
 
 area = 15
 radius = (area - 1) // 2
-net = FireCast(area, terrain_features=trainset.terrain_features, weather_features=trainset.weather_features)
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+net = FireCast(area, terrain_features=trainset.terrain_features, weather_features=trainset.weather_features).to(device)
 
 lr = 0.0001
 criterion = nn.BCELoss()
@@ -35,12 +36,12 @@ for epoch in range(epochs):
                 terrain = np.zeros((1, trainset.terrain_features, area, area))
                 for layer in range(trainset.terrain_features):
                     terrain[0][layer] = terrain_full[layer, x:x + area, y:y + area]
-                weather = weather_full[:, x, y].reshape((1, trainset.weather_features))
-                terrain = torch.tensor(terrain)
+                weather = weather_full[:, x, y].reshape((1, trainset.weather_features)).to(device)
+                terrain = torch.tensor(terrain).to(device)
                 pred = net(terrain, weather)
                 # output[x, y] = pred[0][0].item()
                 optimizer.zero_grad()
-                loss = criterion(pred[0].double(), target[x, y].reshape(1))
+                loss = criterion(pred[0].double(), target[x, y].reshape(1).to(device))
                 loss.backward()
                 optimizer.step()
                 running_loss += loss.item()
