@@ -61,40 +61,35 @@ class MapUtils:
                                )
         self.gdf = gdf.to_crs(crs=self.aea).iloc[:, [0, 1, -1]]
 
-    def len_gdf(self) -> int:
+    def generate_perimeters(self) -> [(Point, np.array)]:
         """
-        Returns the number of VIIRS products stored in the GeoDataFrame.
+        Generates every array of a certain size and specific distance away from every VIIRS detection that contains all
+        fires within its area. The architecture of the FireCast model necessitates an individual prediction for every
+        area around a point. This function generates the data needed to perform those predictions for a given VIIRS product.
         """
-        return self.gdf.shape[0]
-
-    def generate_perimeters(self, index: int) -> [(Point, np.array)]:
-        """
-        Given the index of a specific VIIRS product, generates every array of a certain size
-        and specific distance away from that point that contains all fires within its area.
-        The architecture of the FireCast model necessitates an individual prediction for every area around a point.
-        This function generates the data needed to perform those predictions for a given VIIRS product.
-        """
-        perimeters = []
-        fire_center = self.gdf.iloc[index, :]
-        center_lon, center_lat = fire_center.geometry.x, fire_center.geometry.y
-        gdf = self.gdf[self.gdf.geometry.x >= center_lon - self.area * 375]
-        gdf = gdf[gdf.geometry.x <= center_lon + self.area * 375]
-        gdf = gdf[gdf.geometry.y >= center_lat - self.area * 375]
-        gdf = gdf[gdf.geometry.y <= center_lat + self.area * 375]
-        gdf_array = np.zeros((self.area * 2 - 1, self.area * 2 - 1))
-        top_left = Point(center_lon - (self.area - 0.5) * 375, center_lat - (self.area - 0.5) * 375)
-        for index, fire in gdf.iterrows():
-            array_x = int((fire.geometry.x - top_left.x) // 375)
-            array_y = int((fire.geometry.y - top_left.y) // 375)
-            if 0 <= array_x < self.area * 2 - 1 and 0 <= array_y < self.area * 2 - 1:
-                gdf_array[array_y, array_x] = 1
-        for lat in range(-self.radius, self.radius + 1):
-            for lon in range(-self.radius, self.radius + 1):
-                center = Point(self.aea_deg.transform(center_lon + lon * 375, center_lat + lat * 375))
-                fire_data = gdf_array[self.radius + lat:self.area + self.radius + lat,
-                            self.radius + lon:self.area + self.radius + lon]
-                perimeters.append((center, fire_data))
-        return perimeters
+        perimeters = {}
+        for i in range(mu.gdf.shape[0]):
+            fire_center = self.gdf.iloc[i, :]
+            center_lon, center_lat = fire_center.geometry.x, fire_center.geometry.y
+            gdf = self.gdf[self.gdf.geometry.x >= center_lon - self.area * 375]
+            gdf = gdf[gdf.geometry.x <= center_lon + self.area * 375]
+            gdf = gdf[gdf.geometry.y >= center_lat - self.area * 375]
+            gdf = gdf[gdf.geometry.y <= center_lat + self.area * 375]
+            gdf_array = np.zeros((self.area * 2 - 1, self.area * 2 - 1))
+            top_left = Point(center_lon - (self.area - 0.5) * 375, center_lat - (self.area - 0.5) * 375)
+            for index, fire in gdf.iterrows():
+                array_x = int((fire.geometry.x - top_left.x) // 375)
+                array_y = int((fire.geometry.y - top_left.y) // 375)
+                if 0 <= array_x < self.area * 2 - 1 and 0 <= array_y < self.area * 2 - 1:
+                    gdf_array[array_y, array_x] = 1
+            for lat in range(-self.radius, self.radius + 1):
+                for lon in range(-self.radius, self.radius + 1):
+                    center = self.aea_deg.transform(center_lon + lon * 375, center_lat + lat * 375)
+                    center = (round(center[0], 3), round(center[1], 3)) # The grid used is 375m: Degree precision at 3 digits is 110m
+                    fire_data = gdf_array[self.radius + lat:self.area + self.radius + lat,
+                                self.radius + lon:self.area + self.radius + lon]
+                    perimeters[center] = fire_data
+        return [(Point(c), perimeters[c]) for c in perimeters]
 
     def read_tiff(self, tiff: rasterio.DatasetReader, lat: int, lon: int) -> np.array:
         """

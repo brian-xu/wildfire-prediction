@@ -20,7 +20,7 @@
 <script src="../static/latest.js"></script>
 <script>
 
-    var map = new L.Map('map').setView([39.8283, -98.5795], 5);
+    var map = new L.Map('map', {minZoom: 3, maxZoom: 13}).setView([39.8283, -98.5795], 5);
 
     var tiles = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',

@@ -11,8 +11,8 @@ class MapPredictor:
                  firecast_path: str):
         self.mu = map_utils.MapUtils(area)
         self.mu.reproj_viirs(viirs_data)
-        self.rr_data = rr_data
         self.rr_vars = ['tmp2m', 'rh2m', 'ugrd10m', 'vgrd10m', 'pratesfc']
+        self.rr_data = {var: rr_data[var] for var in self.rr_vars}
         self.evc_path = evc_path
         self.evc_vars = ['Sparse Vegetation Canopy', 'Tree Cover', 'Shrub Cover', 'Herb Cover']
         self.evc_dict = xml_parser.parse_layers(evc_path + '.aux.xml')
@@ -20,21 +20,11 @@ class MapPredictor:
         self.area = area
         self.predictor = predict.Predictor(firecast_path)
 
-    def viirs_generator(self):
+    def gen_predictions(self) -> [(Point, np.float)]:
         """
-        Returns a generator iterating through all VIIRS products currently stored.
+        Calculate all predictions in the given VIIRS GeoDataFrame.
         """
-        return [i for i in range(self.mu.len_gdf())]
-
-    def gen_predictions(self, indices: [int]) -> [(Point, np.float)]:
-        """
-        Given specific indices in the VIIRS GeoDataFrame, calculate all predictions around those points.
-        Segmenting calculations through this function encourages parallelization to take advantage of all computing
-        resources available.
-        """
-        perimeters = []
-        for i in indices:
-            perimeters.extend(self.mu.generate_perimeters(i))
+        perimeters = self.mu.generate_perimeters()
         rr_x, rr_y = (0, 0)
         predictions = []
         with rasterio.Env():
