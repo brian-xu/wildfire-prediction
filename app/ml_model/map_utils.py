@@ -68,7 +68,7 @@ class MapUtils:
         area around a point. This function generates the data needed to perform those predictions for a given VIIRS product.
         """
         perimeters = {}
-        for i in range(mu.gdf.shape[0]):
+        for i in range(self.gdf.shape[0]):
             fire_center = self.gdf.iloc[i, :]
             center_lon, center_lat = fire_center.geometry.x, fire_center.geometry.y
             gdf = self.gdf[self.gdf.geometry.x >= center_lon - self.area * 375]

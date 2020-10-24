@@ -11,8 +11,8 @@ class Predictor:
 
     def predict(self, terrain: np.array, weather: np.array) -> torch.tensor:
         with torch.no_grad():
-            terrain = torch.tensor(terrain)
-            weather = torch.tensor(weather)
+            terrain = torch.tensor(terrain, device=self.device)
+            weather = torch.tensor(weather, device=self.device)
             pred = self.net(terrain, weather)
 
         return pred[0].to('cpu').item()

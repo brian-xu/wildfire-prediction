@@ -29,5 +29,5 @@ class DataCollector:
         The data is returned as a netCDF4 dataset,
         which works similarly to a dictionary of NumPy arrays.
         """
-        rapid_refresh_url = 'https://nomads.ncep.noaa.gov:9090/dods/rap/rap' + self.date.strftime("%Y%m%d") + '/rap_00z'
+        rapid_refresh_url = 'https://nomads.ncep.noaa.gov/dods/rap/rap' + self.date.strftime("%Y%m%d") + '/rap_00z'
         return netCDF4.Dataset(rapid_refresh_url)
