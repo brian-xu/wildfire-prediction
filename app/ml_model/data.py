@@ -1,6 +1,7 @@
 import datetime
 
 import netCDF4
+import xarray
 import requests
 
 
@@ -30,4 +31,7 @@ class DataCollector:
         which works similarly to a dictionary of NumPy arrays.
         """
         rapid_refresh_url = 'https://nomads.ncep.noaa.gov/dods/rap/rap' + self.date.strftime("%Y%m%d") + '/rap_00z'
-        return netCDF4.Dataset(rapid_refresh_url)
+        rr = xarray.open_dataset(rapid_refresh_url)
+        rr[['tmp2m', 'rh2m', 'ugrd10m', 'vgrd10m', 'pratesfc']].to_netcdf('rap.nc')
+        rr_data = netCDF4.Dataset('rap.nc')
+        return rr_data

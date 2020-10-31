@@ -30,7 +30,7 @@ class MapPredictor:
         with rasterio.Env():
             slp_tiff = rasterio.open(self.slp_path)
             evc_tiff = rasterio.open(self.evc_path)
-            for p in perimeters:
+            for index, p in enumerate(perimeters):
                 if self.mu.rr_indices(p[0].x, p[0].y) != [rr_x, rr_y]:
                     weather = np.zeros(len(self.rr_vars))
                     rr_x, rr_y = self.mu.rr_indices(p[0].x, p[0].y)
@@ -46,4 +46,5 @@ class MapPredictor:
                     evc_layers.append(self.mu.resample_landfire(evc_var))
                 terrain = np.expand_dims(np.stack([p[1], slp] + evc_layers), axis=0)
                 predictions.append((p[0], self.predictor.predict(terrain, weather)))
+                print(f'Progress: {100*index/len(perimeters):.2f}%')
         return predictions

@@ -44,7 +44,7 @@ class MapUtils:
         """
         lat_index = (lat - 16.3220110) // 0.18470909
         lon_index = (lon + 139.8566030) // 0.19242568
-        return [lat_index, lon_index]
+        return [int(lat_index), int(lon_index)]
 
     def reproj_viirs(self, viirs_data: str) -> None:
         """

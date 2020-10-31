@@ -76,3 +76,5 @@ __pypackages__/
 train/wildfire_data/
 app/ml_model/maps/
 app/ml_model/weights/
+app/ml_model/lance_key.txt
+app/ml_model/rap.nc
