@@ -1,1 +1,1 @@
-A35E690A-C182-11EA-84E7-590B0E8F8B39
+# You should provide your own API key here. You can register for one at https://nrt3.modaps.eosdis.nasa.gov/
