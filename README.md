@@ -1,26 +1,30 @@
 # Wildfire Prediction
 
-This is a complete machine learning application for predicting wildfire spread
-in the United States. The model architecture is written in PyTorch, with heavy
-use of GeoPandas and rasterio for data processing.
+This is a machine learning application for predicting wildfire spread.
+The main architecture is written in PyTorch, and GeoPandas and rasterio
+are used for data processing.
 
-# Demos
+# Overview
 
-The purpose of this project was mainly self-educational, and being a student I
-decided not to invest the considerable amount of resources training and
-deploying a production-quality model would require. As a result, a permanently
-running and public demo was out of the scope of the project (although the
-architecture would lend itself well to a GitHub pages one.) Nonetheless,
-I wrote scalable, efficient, and accurate code for training and deployment
-and verified convergence on a subset of the training data.
+I created this project with the intent of challenging myself to build a
+complete machine learning application, from the model architecture to a
+web application. I considered actually training and deploying a model, but
+was unsatisfied with the 15-kilometer constraint imposed by the dataset.
+Scraping historical data to create a new dataset was out of the scope of the
+project, so I decided against it.
 
-[app/static](app/static) contains a very lightweight JavaScript demo for
-displaying results.
+The repository is broken up into several components:
+
+[train/](train) contains the model architecture and the training loop.
+
+[preprocessing/](preprocessing) describes how to download and handle the
+geographical data the model requires.
+
+[app/](app) contains a script for generating fire spread predictions, as well
+as code for an interactive map to view those predictions.
 
 # Reproduction
 
-To the best of my ability, I have described the necessary steps to configure
-and deploy an application using all or some of the code in this repository.
 Each folder has a README with specifics for that aspect of the project.
 
 Under the [BSD 3 License](LICENSE), you are free to distribute and modify the
