@@ -1,5 +1,5 @@
 geopandas
 rasterio
 netCDF4
+xarray
 requests
-flask
